@@ -1,0 +1,14 @@
+name: Jekyll site CI
+
+on: [deployment]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build the site in the jekyll/builder container
+      run: |
+        echo "this buiid is done"
