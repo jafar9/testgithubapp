@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <title>Dkube Install</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+ 
+
+ 
+ </head>
+ <body>
+  <div class="container"><br/>
+    <div class="card ">
+      <div class="card-header" style=" background-color:#0a2732; font-family: ' "Courier New", Courier, monospace' ">
+          <div class = "page-header text-center" style="color: #fff;"><h1><i>Dkube Installation</i></h1></div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div style="text-align: right; width: 100%" id="download">
+              <a href="http://127.0.0.1:8888/report" download="report.csv" class="btn btn-info btn-sm"><i class="fa fa-download" aria-hidden="true"></i></a>
+            </div>
+          </div>
+            <div class="row">
+              <div class="col-2 text-right"></div>
+              <div class="col-8">
+              <div style="font-family: ' "Courier New", Courier, monospace' "><h4 id="Status" style="font-style: italic;"><i id="prog"></i></h4></div>
+              <div id="status" style="font-family: '"Courier New", Courier, monospace'; font-size: 20px;font-weight: 200;"></div>
+            <span id="demo"  style="font-size:60px; margin-left: 50%; margin-top:15%; "><i class="fa fa-spinner fa-spin fa-lg"></i></span>
+            <div style="font-family: ' "Courier New", Courier, monospace' "><h4 id="overview" style="font-style: italic;"><i id="prog"><u></u></i></h4></div>
+            <div id="overview_canvas" style="font-family: '"Courier New", Courier, monospace'; font-size: 20px;font-weight: 200;"></div>
+            <p onclick="hide()"><span id="more">...<u  style="color:#29a8ff;">More</u></span><span id="less">...<u  style="color:#29a8ff;">Less</u></span></p>
+
+           <div id="node_canvas" style="font-family: '"Courier New", Courier, monospace'; font-size: 20px;font-weight: 200;"></div>
+         </div>
+           <div class="col-2"></div>
+        </div>
+      </div>
+    </div>
+ </body>
+</html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script>
+var no_of_dives=0;
+ var load=document.getElementById("demo");
+  var canvasHold=document.getElementById("overview_canvas");
+  var nodeHold=document.getElementById("node_canvas");
+   nodeHold.style.display = "none";
+  document.getElementById("more").style.display = "none";
+  document.getElementById("less").style.display = "none";
+  document.getElementById("download").style.display = "none";
+var statusHold=document.getElementById("status");
+  var summary=document.getElementById("Status");
+  var overview=document.getElementById("overview");
+ $(document).ready(function(){
+    send()
+ })
+
+ function send(){
+    $.ajax({
+      type : 'GET',
+      url:'http://127.0.0.1:8888/report',
+      success:function(data){
+        document.getElementById("download").style.display = "block";
+        var nodes_data=data.split("~")
+        var numof_nodes=nodes_data.length-1  
+        summary.innerHTML="";
+        /*status line*/
+        var status_data=nodes_data[numof_nodes].split("\n")
+        //console.log(status_data)
+        summary.innerHTML="<u>"+status_data[1]+'</u>';
+        var installtion_status=status_data[3].split(",")
+        var dkube_version=status_data[4].split(",")
+        var table_data = '<table class="table table-borderless" style="border: none;">';
+        table_data += '<tr>';
+        table_data += '<td>'+installtion_status[0]+"&nbsp;&nbsp;&nbsp;&nbsp;"+installtion_status[1]+'</td>';
+        table_data += '</tr>';
+        table_data += '<tr>'; 
+        table_data += '<td>'+dkube_version[0]+"&nbsp;&nbsp;&nbsp;&nbsp;"+dkube_version[1]+'</td>';       
+        table_data += '</tr>';
+        table_data += '</table>';
+        statusHold.innerHTML="";
+        statusHold.innerHTML='<div id="status_table"></div>';
+        $('#status_table').html(table_data);
+        /*overview table*/
+        overview.innerHTML="";
+        overview.innerHTML="<u>Overview</u>";
+        var overview_data = nodes_data[numof_nodes-1].split("\n")
+        var table_data = '<div class="table-responsive-sm"><table class="table table-bordered table-hover">';
+        var col=1;
+        for(var row=3 ; row < overview_data.length-1;row++){
+          var cell_data=overview_data[row].split(",")
+          table_data += '<tr>';
+          for(var cell_count=0; cell_count<cell_data.length; cell_count++){
+            if(row === 3){
+              if(cell_count === 0)
+              {
+                table_data += '<th>#</th>';  
+              }
+              table_data += '<th>'+cell_data[cell_count]+'</th>';
+            }
+            else{
+              if(cell_count === 0){
+                if(cell_data[2] === "Processing" ||cell_data[2] === "Upgrading" ){   
+                  table_data+='<td style="color:#FB8005;  font-size: 15px;">&nbsp;<i class="fa fa-spinner fa-spin fa-lg" aria-hidden="true"></i></td>'
+                }
+                else if(cell_data[2] === "Failed"){
+                  table_data+='<td style="color:#D41902;  font-size: 15px;">&nbsp;<i class="fa fa-times" aria-hidden="true"></i></td>'    
+                }
+               else{
+                  table_data+='<td style="color:green;  font-size: 15px;">&nbsp;<i class="fa fa-check" aria-hidden="true"></i></td>'
+                }
+              }
+              table_data += '<td>'+cell_data[cell_count]+'</td>';
+            }
+          }
+          if(col===1){
+            row++; 
+            col++; 
+          }
+          table_data += '</tr>';
+        }
+        table_data += '</table></div>';
+        canvasHold.innerHTML="";
+        canvasHold.innerHTML='<div id="overview_table"></div>';
+        $('#overview_table').html(table_data);
+        if(no_of_dives === 0){
+          document.getElementById("more").style.display = "block";
+          no_of_dives++;  
+        }
+        
+        /*nodes and workers tables*/
+        for(var node = 0; node < numof_nodes-1 ; node++){
+          var workers_data = nodes_data[node];
+          var worker = workers_data.split("\n");
+          var row=0;
+          var progres_data
+          if(node == 0){
+            row=4; //master
+            progres_data=worker[2].split(",")  
+          }          
+          else{
+            row=5 ; //worker
+            progres_data=worker[3].split(",")
+          }
+          var div = document.createElement("div");
+          div.setAttribute('id', "worker-"+node);
+          nodeHold.appendChild(div);
+          if(node === 0){
+            var table_data = '<h4 style="font-style: italic;"><i><u>'+ worker[0]+'</u></i></h4>Progress:'+progres_data[1]+'<br/><div class="table-responsive-sm"><table class="table table-bordered table-hover">';  
+          }
+          else{
+            var table_data = '<h4 style="font-style: italic;"><i><u>'+ worker[1]+'</u></i></h4>Progress:'+progres_data[1]+'<br/><div class="table-responsive-sm"><table class="table table-bordered table-hover">';
+          }
+          var column=1;
+          for(;row < worker.length-1;row++){
+            cell_data=worker[row].split(",")
+            table_data += '<tr>';
+            for(var cell_count=0; cell_count<cell_data.length; cell_count++){
+              if(column === 1){
+                  if(cell_count === 0)
+                  {
+                    table_data += '<th>#</th>';  
+                  }
+                  table_data += '<th>'+cell_data[cell_count]+'</th>'; 
+              }
+              else{
+                if(cell_count == 0){
+                    if(cell_data[1] === "Processing" ||cell_data[1] === "Upgrading" ){   
+                       table_data+='<td style="color:#FB8005;  font-size: 15px;">&nbsp;<i class="fa fa-spinner fa-spin fa-lg" aria-hidden="true"></i></td>'
+                    }
+                    else if(cell_data[1] === "Failed"){
+                        table_data+='<td style="color:#D41902;  font-size: 15px;">&nbsp;<i class="fa fa-times" aria-hidden="true"></i></td>'    
+                    }
+                    else{
+                        table_data+='<td style="color:green;  font-size: 15px;">&nbsp;<i class="fa fa-check" aria-hidden="true"></i></td>'
+                    }
+                }
+                table_data += '<td>'+cell_data[cell_count]+'</td>';
+              }
+            }
+            table_data += '</tr>';
+            if(column===1){
+              row++;
+              column++;
+            }
+          }
+          table_data += '</table><br/>'; 
+          document.getElementById("worker-"+node).innerHTML="";
+          var id= "#worker-"+node
+          $(id).html(table_data);
+        }
+        load.style.display="none"
+        setTimeout(function(){send();}, 5000);
+      }
+      }); 
+  }
+  function hide(){
+     var x = document.getElementById("node_canvas");
+        //document.getElementById("more").innerHTML="";
+        if (x.style.display === "none") {
+          x.style.display = "block";
+          document.getElementById("less").style.display = "block";
+          document.getElementById("more").style.display = "none";
+        } else {
+          x.style.display = "none";
+          document.getElementById("more").style.display = "block";
+          document.getElementById("less").style.display = "none";
+        }
+  }
+</script>
